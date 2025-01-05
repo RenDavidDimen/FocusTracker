@@ -7,12 +7,12 @@ export default function TabLayout() {
     <Tabs
       screenOptions={{
         headerStyle: {
-          backgroundColor: Colors.OFFWHITE,
+          backgroundColor: Colors.BEIGE,
         },
         headerShadowVisible: false,
         headerTintColor: Colors.BLACK,
         tabBarStyle: {
-          backgroundColor: Colors.OFFWHITE,
+          backgroundColor: Colors.BEIGE,
         },
         tabBarActiveBackgroundColor: Colors.LIGHTGREEN,
         tabBarActiveTintColor: Colors.BLUE,
@@ -21,7 +21,6 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: "Home",
           headerShown: false,
           tabBarIcon: ({ focused, color }) => (
             <Ionicons
