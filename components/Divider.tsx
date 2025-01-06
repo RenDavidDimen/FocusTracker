@@ -11,7 +11,7 @@ interface DividerProps {
 const Divider: React.FC<DividerProps> = ({
   width = 1,
   orientation = "horizontal",
-  color = "#DFE4EA",
+  color = "lightgrey",
   dividerStyle,
 }) => {
   const dividerStyles = [

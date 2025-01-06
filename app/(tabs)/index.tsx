@@ -1,4 +1,4 @@
-import { Text, View, StyleSheet } from "react-native";
+import { Text, View, StyleSheet, SafeAreaView } from "react-native";
 import CircleButton from "@/components/CircleButton";
 import Divider from "@/components/Divider";
 import * as Colors from "@/constants/Colors";
@@ -78,7 +78,7 @@ export default function Index() {
   };
 
   return (
-    <View style={styles.screen}>
+    <SafeAreaView style={styles.screen}>
       <View style={styles.screenContainer}>
         <Text style={styles.header}>Welcome back,{"\n"}Ren!</Text>
 
@@ -121,12 +121,12 @@ export default function Index() {
         <View style={styles.recordActivityContainer}>
           <CircleButton
             icon="clock-plus-outline"
+            diameter={100}
             onPress={() => alert("Going to tracking screen")}
           />
-          <Text style={styles.newActivityLabel}>Record New Activity</Text>
         </View>
       </View>
-    </View>
+    </SafeAreaView>
   );
 }
 const styles = StyleSheet.create({
@@ -136,12 +136,6 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.BEIGE,
     paddingTop: 50,
     paddingBottom: 10,
-  },
-  divider: {
-    marginTop: 10,
-    borderRadius: 1,
-    borderBottomColor: Colors.OFFWHITE,
-    borderBottomWidth: 1,
   },
   screenContainer: {
     flex: 1,
@@ -196,5 +190,11 @@ const styles = StyleSheet.create({
   newActivityLabel: {
     fontSize: 18,
     fontWeight: 400,
+  },
+  divider: {
+    marginTop: 10,
+    borderRadius: 1,
+    borderBottomColor: Colors.OFFWHITE,
+    borderBottomWidth: 1,
   },
 });
