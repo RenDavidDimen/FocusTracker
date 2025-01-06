@@ -4,15 +4,31 @@ import * as Colors from "@/constants/Colors";
 
 type Props = {
   icon: keyof typeof MaterialCommunityIcons.glyphMap;
-  color?: string;
+  diameter: number;
+  iconColor?: string;
+  backgroundColor?: string;
   onPress: () => void;
 };
 
-export default function CircleButton({ onPress, icon, color }: Props) {
+export default function CircleButton({
+  onPress,
+  icon,
+  iconColor: iconColor,
+  backgroundColor: backgroundColor,
+  diameter,
+}: Props) {
   return (
-    <View style={styles.circleButtonContainer}>
-      <Pressable style={styles.circleButton} onPress={onPress}>
-        <MaterialCommunityIcons name={icon} size={38} color={color} />
+    <View
+      style={[
+        styles.circleButtonContainer,
+        { width: diameter, height: diameter },
+      ]}
+    >
+      <Pressable
+        style={[styles.circleButton, { backgroundColor: backgroundColor }]}
+        onPress={onPress}
+      >
+        <MaterialCommunityIcons name={icon} size={38} color={iconColor} />
       </Pressable>
     </View>
   );
@@ -20,8 +36,6 @@ export default function CircleButton({ onPress, icon, color }: Props) {
 
 const styles = StyleSheet.create({
   circleButtonContainer: {
-    width: 100,
-    height: 100,
     padding: 3,
   },
   circleButton: {

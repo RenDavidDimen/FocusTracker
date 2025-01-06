@@ -11,11 +11,16 @@ export default function TabLayout() {
         },
         headerShadowVisible: false,
         headerTintColor: Colors.BLACK,
+        tabBarActiveBackgroundColor: Colors.LIGHTGREEN,
+        tabBarActiveTintColor: Colors.BLACK,
         tabBarStyle: {
           backgroundColor: Colors.BEIGE,
+          height: 75,
         },
-        tabBarActiveBackgroundColor: Colors.LIGHTGREEN,
-        tabBarActiveTintColor: Colors.BLUE,
+        tabBarLabelStyle: {
+          fontSize: 14,
+        },
+        tabBarHideOnKeyboard: true,
       }}
     >
       <Tabs.Screen
@@ -26,7 +31,7 @@ export default function TabLayout() {
             <Ionicons
               name={focused ? "home-sharp" : "home-outline"}
               color={color}
-              size={24}
+              size={28}
             />
           ),
         }}
@@ -34,14 +39,12 @@ export default function TabLayout() {
       <Tabs.Screen
         name="tracker"
         options={{
-          title: "Tracker",
-          headerTitle: "Tracker",
-          headerTitleAlign: "center",
+          headerShown: false,
           tabBarIcon: ({ focused, color }) => (
             <Ionicons
               name={focused ? "timer-sharp" : "timer-outline"}
               color={color}
-              size={24}
+              size={28}
             />
           ),
         }}
@@ -56,7 +59,7 @@ export default function TabLayout() {
             <Ionicons
               name={focused ? "settings-sharp" : "settings-outline"}
               color={color}
-              size={24}
+              size={28}
             />
           ),
         }}
