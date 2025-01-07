@@ -1,12 +1,13 @@
+import { useEffect, useState } from "react";
 import { Text, View, StyleSheet, SafeAreaView } from "react-native";
 import { FlatList } from "react-native-gesture-handler";
 import { PieChart } from "react-native-gifted-charts";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import CircleButton from "@/components/CircleButton";
 import Divider from "@/components/Divider";
+import * as Keys from "@/constants/Keys";
 import * as Colors from "@/constants/Colors";
 import * as Tests from "@/tests/TestData";
-import { useEffect, useState } from "react";
 
 export default function Index() {
   const [typeData, setTypeData] = useState([]);
@@ -14,8 +15,8 @@ export default function Index() {
 
   const fetchData = async () => {
     try {
-      const typeData = await AsyncStorage.getItem("TYPE_DATA");
-      const activityData = await AsyncStorage.getItem("ACTIVITY_DATA");
+      const typeData = await AsyncStorage.getItem(Keys.TYPE_DATA);
+      const activityData = await AsyncStorage.getItem(Keys.ACTIVITY_DATA);
       if (typeData !== null) {
         setTypeData(JSON.parse(typeData));
       } else {
@@ -50,13 +51,13 @@ export default function Index() {
     }
   }
 
-  // const storeData = async (key: string, value) => {
-  //   try {
-  //     await AsyncStorage.setItem(key, value);
-  //   } catch (e) {
-  //     console.log(`saving error occured when trying to save ${key}`);
-  //   }
-  // };
+  const storeData = async (key: string, value) => {
+    try {
+      await AsyncStorage.setItem(key, value);
+    } catch (e) {
+      console.log(`saving error occured when trying to save ${key}`);
+    }
+  };
 
   const renderActivityData = ({ item }) => {
     return (
@@ -69,8 +70,8 @@ export default function Index() {
     );
   };
 
-  // storeData("TYPE_DATA", JSON.stringify(Tests.typeData));
-  // storeData("ACTIVITY_DATA", JSON.stringify(Tests.activityData));
+  storeData(Keys.TYPE_DATA, JSON.stringify(Tests.typeData));
+  storeData(Keys.ACTIVITY_DATA, JSON.stringify(Tests.activityData));
 
   return (
     <SafeAreaView style={styles.screen}>

@@ -14,13 +14,38 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import CircleButton from "@/components/CircleButton";
 import StopWatch from "@/components/StopWatch";
 import * as Colors from "@/constants/Colors";
+import * as Keys from "@/constants/Keys";
 
 export default function tracker() {
   const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
   const [stopwatchAction, setStopwatchAction] = useState("");
   const [activityName, setActivityName] = useState("");
   const [activityType, setActivityType] = useState("");
-  const [savedData, setSavedData] = useState([]);
+  const [typeData, setTypeData] = useState([]);
+  const [activityData, setActivityData] = useState([]);
+
+  const fetchData = async () => {
+    try {
+      const typeData = await AsyncStorage.getItem(Keys.TYPE_DATA);
+      const activityData = await AsyncStorage.getItem(Keys.ACTIVITY_DATA);
+      if (typeData !== null) {
+        setTypeData(JSON.parse(typeData));
+      } else {
+        setTypeData(JSON.parse("[]"));
+      }
+      if (activityData !== null) {
+        setActivityData(JSON.parse(activityData));
+      } else {
+        setActivityData(JSON.parse("[]"));
+      }
+    } catch (e) {
+      console.log(`Error fetching in data: ${e}`);
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
 
   useEffect(() => {
     const keyboardDidShowListener = Keyboard.addListener(
@@ -38,27 +63,16 @@ export default function tracker() {
     };
   }, []);
 
-  const getData = async () => {
-    try {
-      const value = await AsyncStorage.getItem("my-key");
-      if (value !== null) {
-        // value previously stored
-      }
-    } catch (e) {
-      // error reading value
-    }
-  };
-
-  const storeData = async (value: any) => {
-    try {
-      await AsyncStorage.setItem("my-key", value);
-    } catch (e) {
-      // saving error
-    }
-  };
-
   const dismissKeyboard = () => {
     Keyboard.dismiss();
+  };
+
+  const setData = async (key: string, value) => {
+    try {
+      await AsyncStorage.setItem(key, value);
+    } catch (e) {
+      console.log(`saving error occured when trying to save ${key}`);
+    }
   };
 
   const handleSave = () => {
@@ -70,7 +84,7 @@ export default function tracker() {
 
     setStopwatchAction("reset");
     const newActivity = { name: activityName, type: activityType };
-    setSavedData((prevData) => [...prevData, newActivity]);
+    setActivityData((activityData) => [...activityData, newActivity]);
 
     alert("[" + activityName + ", " + activityType + "] saved successfully!'");
 
