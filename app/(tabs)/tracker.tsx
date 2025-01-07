@@ -1,27 +1,74 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
-  Button,
+  Keyboard,
+  KeyboardAvoidingView,
+  Platform,
   SafeAreaView,
   StyleSheet,
   Text,
   TextInput,
+  TouchableWithoutFeedback,
   View,
 } from "react-native";
-import { useForm, Controller } from "react-hook-form";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import CircleButton from "@/components/CircleButton";
+import StopWatch from "@/components/StopWatch";
 import * as Colors from "@/constants/Colors";
 
 export default function tracker() {
+  const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
+  const [stopwatchAction, setStopwatchAction] = useState("");
   const [activityName, setActivityName] = useState("");
   const [activityType, setActivityType] = useState("");
   const [savedData, setSavedData] = useState([]);
 
+  useEffect(() => {
+    const keyboardDidShowListener = Keyboard.addListener(
+      "keyboardDidShow",
+      () => setIsKeyboardVisible(true)
+    );
+    const keyboardDidHideListener = Keyboard.addListener(
+      "keyboardDidHide",
+      () => setIsKeyboardVisible(false)
+    );
+
+    return () => {
+      keyboardDidShowListener.remove();
+      keyboardDidHideListener.remove();
+    };
+  }, []);
+
+  const getData = async () => {
+    try {
+      const value = await AsyncStorage.getItem("my-key");
+      if (value !== null) {
+        // value previously stored
+      }
+    } catch (e) {
+      // error reading value
+    }
+  };
+
+  const storeData = async (value: any) => {
+    try {
+      await AsyncStorage.setItem("my-key", value);
+    } catch (e) {
+      // saving error
+    }
+  };
+
+  const dismissKeyboard = () => {
+    Keyboard.dismiss();
+  };
+
   const handleSave = () => {
+    setStopwatchAction("stop");
     if (activityName.trim() === "" || activityType.trim() === "") {
       alert("'Error', 'Please fill in both fields.'");
       return;
     }
 
+    setStopwatchAction("reset");
     const newActivity = { name: activityName, type: activityType };
     setSavedData((prevData) => [...prevData, newActivity]);
 
@@ -32,50 +79,57 @@ export default function tracker() {
     setActivityType("");
   };
 
-  return (
-    <SafeAreaView style={styles.screen}>
-      <View style={styles.screenContainer}>
-        <Text style={styles.subHeader}>Track Your Activity</Text>
+  function playButton() {
+    if (stopwatchAction !== "start") {
+      return (
+        <CircleButton
+          icon="play"
+          diameter={100}
+          backgroundColor={Colors.BLUE}
+          onPress={() => setStopwatchAction("start")}
+        />
+      );
+    } else {
+      return (
+        <CircleButton
+          icon="pause"
+          diameter={100}
+          backgroundColor={Colors.BLUE}
+          onPress={() => setStopwatchAction("stop")}
+        />
+      );
+    }
+  }
 
-        <View style={styles.timerContainer}>
-          <View style={styles.timerComponent}>
-            <Text style={styles.timer}>00:00:00</Text>
-          </View>
+  function setStopwatchControls() {
+    if (stopwatchAction === "reset" || stopwatchAction === "") {
+      return (
+        <View style={styles.timerControls}>
+          <CircleButton
+            icon="refresh"
+            diameter={80}
+            backgroundColor="lightgrey"
+            onPress={() => {}}
+          />
+          {playButton()}
+          <CircleButton
+            icon="content-save-outline"
+            diameter={80}
+            backgroundColor="lightgrey"
+            onPress={() => {}}
+          />
         </View>
-
-        <View style={styles.activityForm}>
-          <View style={styles.inputField}>
-            <Text style={styles.inputLabel}>Activity Name </Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Enter activity name"
-              value={activityName}
-              onChangeText={setActivityName}
-            />
-          </View>
-          <View style={styles.inputField}>
-            <Text style={styles.inputLabel}>Activity Type </Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Enter activity type"
-              value={activityType}
-              onChangeText={setActivityType}
-            />
-          </View>
-        </View>
-
+      );
+    } else {
+      return (
         <View style={styles.timerControls}>
           <CircleButton
             icon="refresh"
             diameter={80}
             backgroundColor={Colors.PINK}
-            onPress={() => alert("Going to tracking screen")}
+            onPress={() => setStopwatchAction("reset")}
           />
-          <CircleButton
-            icon="clock-plus-outline"
-            diameter={100}
-            onPress={() => alert("Going to tracking screen")}
-          />
+          {playButton()}
           <CircleButton
             icon="content-save-outline"
             diameter={80}
@@ -83,7 +137,49 @@ export default function tracker() {
             onPress={handleSave}
           />
         </View>
-      </View>
+      );
+    }
+  }
+
+  return (
+    <SafeAreaView style={styles.screen}>
+      <TouchableWithoutFeedback onPress={() => dismissKeyboard()}>
+        <View style={styles.screenContainer}>
+          <View style={styles.upperScreenSection}>
+            <Text style={styles.subHeader}>Track Your Activity</Text>
+
+            <View style={styles.timerContainer}>
+              <StopWatch action={stopwatchAction} />
+            </View>
+
+            <KeyboardAvoidingView
+              behavior={Platform.OS === "ios" ? "padding" : undefined}
+              style={styles.activityForm}
+            >
+              <View style={styles.inputField}>
+                <Text style={styles.inputLabel}>Activity Name </Text>
+                <TextInput
+                  style={styles.input}
+                  placeholder="Enter activity name"
+                  value={activityName}
+                  onChangeText={setActivityName}
+                />
+              </View>
+              <View style={styles.inputField}>
+                <Text style={styles.inputLabel}>Activity Type </Text>
+                <TextInput
+                  style={styles.input}
+                  placeholder="Enter activity type"
+                  value={activityType}
+                  onChangeText={setActivityType}
+                />
+              </View>
+            </KeyboardAvoidingView>
+          </View>
+
+          {!isKeyboardVisible && setStopwatchControls()}
+        </View>
+      </TouchableWithoutFeedback>
     </SafeAreaView>
   );
 }
@@ -102,6 +198,10 @@ const styles = StyleSheet.create({
     maxWidth: 400,
     justifyContent: "space-between",
   },
+  upperScreenSection: {
+    flex: 6 / 7,
+    justifyContent: "space-between",
+  },
   subHeader: {
     color: Colors.BLACK,
     fontSize: 32,
@@ -109,22 +209,13 @@ const styles = StyleSheet.create({
   },
   timerContainer: {
     alignItems: "center",
-  },
-  timerComponent: {
-    alignItems: "center",
-    justifyContent: "center",
-    borderRadius: 150,
-    borderWidth: 15,
-    borderColor: Colors.OFFWHITE,
-    height: 300,
-    width: 300,
-  },
-  timer: {
-    color: Colors.BLACK,
-    fontSize: 48,
     paddingVertical: 5,
+    marginVertical: 10,
   },
-  activityForm: {},
+  activityForm: {
+    paddingVertical: 10,
+    justifyContent: "center",
+  },
   inputField: {
     flexDirection: "row",
     alignItems: "flex-start",

@@ -11,7 +11,7 @@ export default function TabLayout() {
         },
         headerShadowVisible: false,
         headerTintColor: Colors.BLACK,
-        tabBarActiveBackgroundColor: Colors.LIGHTGREEN,
+        tabBarActiveBackgroundColor: Colors.GREEN,
         tabBarActiveTintColor: Colors.BLACK,
         tabBarStyle: {
           backgroundColor: Colors.BEIGE,
@@ -26,6 +26,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
+          title: "Home",
           headerShown: false,
           tabBarIcon: ({ focused, color }) => (
             <Ionicons
@@ -39,10 +40,26 @@ export default function TabLayout() {
       <Tabs.Screen
         name="tracker"
         options={{
+          title: "Tracker",
           headerShown: false,
           tabBarIcon: ({ focused, color }) => (
             <Ionicons
               name={focused ? "timer-sharp" : "timer-outline"}
+              color={color}
+              size={28}
+            />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="history"
+        options={{
+          title: "History",
+          headerTitle: "History",
+          headerTitleAlign: "center",
+          tabBarIcon: ({ focused, color }) => (
+            <Ionicons
+              name={focused ? "calendar-sharp" : "calendar-outline"}
               color={color}
               size={28}
             />
