@@ -1,57 +1,42 @@
+import { useEffect, useState } from "react";
 import { Text, View, StyleSheet, SafeAreaView } from "react-native";
-import CircleButton from "@/components/CircleButton";
-import Divider from "@/components/Divider";
-import * as Colors from "@/constants/Colors";
 import { FlatList } from "react-native-gesture-handler";
 import { PieChart } from "react-native-gifted-charts";
-
-const activityData = [
-  {
-    id: "bd7acbea-c1b1-46c2-aed5-3ad53abb28ba",
-    type: "First Item",
-    date: 1736031903,
-    duration: 2400,
-  },
-  {
-    id: "3ac68afc-c605-48d3-a4f8-fbd91aa97f63",
-    type: "Second Item",
-    date: 1714409503,
-    duration: 3661,
-  },
-  {
-    id: "58694a0f-3da1-471f-bd96-145571e29d72",
-    type: "Third Item",
-    date: 1704409503,
-    duration: 7200,
-  },
-];
-
-const timeTotals = [
-  {
-    id: "bd7acbea-c1b1-46c2-aed5-3ad53abb28ba",
-    type: "First Item",
-    date: 1736031903,
-    value: 2400,
-    color: Colors.LIGHTGREEN,
-  },
-  {
-    id: "3ac68afc-c605-48d3-a4f8-fbd91aa97f63",
-    type: "Second Item",
-    date: 1714409503,
-    value: 3661,
-    color: Colors.BLUE,
-  },
-  {
-    id: "58694a0f-3da1-471f-bd96-145571e29d72",
-    type: "Third Item",
-    date: 1704409503,
-    value: 7200,
-    color: Colors.PINK,
-  },
-];
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import CircleButton from "@/components/CircleButton";
+import Divider from "@/components/Divider";
+import * as Keys from "@/constants/Keys";
+import * as Colors from "@/constants/Colors";
+import * as Tests from "@/tests/TestData";
 
 export default function Index() {
-  function getDuration(duration) {
+  const [typeData, setTypeData] = useState([]);
+  const [activityData, setActivityData] = useState([]);
+
+  const fetchData = async () => {
+    try {
+      const typeData = await AsyncStorage.getItem(Keys.TYPE_DATA);
+      const activityData = await AsyncStorage.getItem(Keys.ACTIVITY_DATA);
+      if (typeData !== null) {
+        setTypeData(JSON.parse(typeData));
+      } else {
+        setTypeData(JSON.parse("[]"));
+      }
+      if (activityData !== null) {
+        setActivityData(JSON.parse(activityData));
+      } else {
+        setActivityData(JSON.parse("[]"));
+      }
+    } catch (e) {
+      console.log(`Error fetching in data: ${e}`);
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  function getDuration(duration: any) {
     const hours = Math.floor(((duration % 31536000) % 86400) / 3600);
     const minutes = Math.floor((((duration % 31536000) % 86400) % 3600) / 60);
 
@@ -66,7 +51,15 @@ export default function Index() {
     }
   }
 
-  const renderItem = ({ item }) => {
+  const storeData = async (key: string, value) => {
+    try {
+      await AsyncStorage.setItem(key, value);
+    } catch (e) {
+      console.log(`saving error occured when trying to save ${key}`);
+    }
+  };
+
+  const renderActivityData = ({ item }) => {
     return (
       <View style={styles.activityContainer}>
         <Text style={styles.activityType}>{item.type} </Text>
@@ -76,6 +69,9 @@ export default function Index() {
       </View>
     );
   };
+
+  storeData(Keys.TYPE_DATA, JSON.stringify(Tests.typeData));
+  storeData(Keys.ACTIVITY_DATA, JSON.stringify(Tests.activityData));
 
   return (
     <SafeAreaView style={styles.screen}>
@@ -94,7 +90,7 @@ export default function Index() {
               innerCircleBorderWidth={5}
               innerCircleBorderColor={Colors.BEIGE}
               edgesRadius={15}
-              data={timeTotals}
+              data={typeData}
               centerLabelComponent={() => {
                 return (
                   <View>
@@ -110,11 +106,7 @@ export default function Index() {
 
         <View style={styles.recentActivitiesContainer}>
           <Text style={styles.subheader}>Recent Activities</Text>
-          <FlatList
-            data={activityData}
-            renderItem={renderItem}
-            onRefresh={() => console.log("refreshing")}
-          />
+          <FlatList data={activityData} renderItem={renderActivityData} />
         </View>
 
         <Divider width={2} color={"lightgrey"} dividerStyle={styles.divider} />
@@ -122,6 +114,7 @@ export default function Index() {
           <CircleButton
             icon="clock-plus-outline"
             diameter={100}
+            backgroundColor={Colors.BLUE}
             onPress={() => alert("Going to tracking screen")}
           />
         </View>
