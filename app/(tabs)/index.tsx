@@ -45,14 +45,6 @@ export default function Index() {
     return <Text style={styles.activityDuration}>{timeString}</Text>;
   }
 
-  const storeData = async (key: string, value) => {
-    try {
-      await AsyncStorage.setItem(key, value);
-    } catch (e) {
-      console.log(`saving error occured when trying to save ${key}`);
-    }
-  };
-
   const renderActivityData = ({ item }) => {
     return (
       <View style={styles.activityContainer}>
