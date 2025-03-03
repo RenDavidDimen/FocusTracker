@@ -34,7 +34,7 @@ export default function Index() {
   );
 
   function getDuration(duration: any) {
-    const timeString = TimeConverter.msToReadableTime(duration);
+    const timeString = TimeConverter.msToDHMS(duration);
     return <Text style={styles.activityDuration}>{timeString}</Text>;
   }
 
@@ -71,7 +71,12 @@ export default function Index() {
                 return (
                   <View>
                     <Text style={{ fontSize: 24, fontWeight: "bold" }}>
-                      3h41m
+                      {TimeConverter.msToHM(
+                        typeData.reduce(
+                          (sum, type: TypeData) => sum + type.value,
+                          0
+                        )
+                      )}
                     </Text>
                   </View>
                 );
