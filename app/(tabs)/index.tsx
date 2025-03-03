@@ -56,7 +56,7 @@ export default function Index() {
   const renderActivityData = ({ item }) => {
     return (
       <View style={styles.activityContainer}>
-        <Text style={styles.activityType}>{item.name} </Text>
+        <Text style={styles.activityType}>{item.type} </Text>
         <Text style={styles.activityDuration}>
           {getDuration(item.duration)}
         </Text>
