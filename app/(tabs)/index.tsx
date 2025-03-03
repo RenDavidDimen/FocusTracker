@@ -1,13 +1,15 @@
+import React from "react";
 import { useEffect, useState } from "react";
+import { useFocusEffect } from "expo-router";
 import { Text, View, StyleSheet, SafeAreaView } from "react-native";
 import { FlatList } from "react-native-gesture-handler";
 import { PieChart } from "react-native-gifted-charts";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import CircleButton from "@/components/CircleButton";
 import Divider from "@/components/Divider";
+import TimeConverter from "@/classes/TimeConverter";
 import * as Keys from "@/constants/Keys";
 import * as Colors from "@/constants/Colors";
-import * as Tests from "@/tests/TestData";
 
 export default function Index() {
   const [typeData, setTypeData] = useState([]);
@@ -32,23 +34,15 @@ export default function Index() {
     }
   };
 
-  useEffect(() => {
-    fetchData();
-  }, []);
+  useFocusEffect(
+    React.useCallback(() => {
+      fetchData();
+    }, [])
+  );
 
   function getDuration(duration: any) {
-    const hours = Math.floor(((duration % 31536000) % 86400) / 3600);
-    const minutes = Math.floor((((duration % 31536000) % 86400) % 3600) / 60);
-
-    if (hours > 0) {
-      return (
-        <Text style={styles.activityDuration}>
-          {hours}h {minutes}m
-        </Text>
-      );
-    } else {
-      return <Text style={styles.activityDuration}>{minutes}m</Text>;
-    }
+    const timeString = TimeConverter.msToReadableTime(duration);
+    return <Text style={styles.activityDuration}>{timeString}</Text>;
   }
 
   const storeData = async (key: string, value) => {
@@ -69,9 +63,6 @@ export default function Index() {
       </View>
     );
   };
-
-  storeData(Keys.TYPE_DATA, JSON.stringify(Tests.typeData));
-  storeData(Keys.ACTIVITY_DATA, JSON.stringify(Tests.activityData));
 
   return (
     <SafeAreaView style={styles.screen}>
