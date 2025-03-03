@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useImperativeHandle } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import * as Colors from "@/constants/Colors";
 
-export default function StopWatch({ action }) {
+export default function StopWatch({ action, dataRef }) {
   const [isRunning, setIsRunning] = useState(false);
   const [elapsedTime, setElapsedTime] = useState(0);
   const intervalIdRef = useRef<Timer>(null);
@@ -21,8 +21,19 @@ export default function StopWatch({ action }) {
   useEffect(() => {
     if (isRunning) {
       intervalIdRef.current = setInterval(() => {
-        setElapsedTime(Date.now() - startTimeRef.current);
+        const currentElapsedTime = Date.now() - startTimeRef.current;
+        setElapsedTime(currentElapsedTime);
+
+        if (dataRef) {
+          dataRef.current = {
+            startTime: startTimeRef.current,
+            elapsedTime: currentElapsedTime,
+          };
+        }
       }, 10);
+    } else {
+      clearInterval(intervalIdRef.current);
+      intervalIdRef.current = null;
     }
 
     return () => {
@@ -32,8 +43,8 @@ export default function StopWatch({ action }) {
 
   // ******** Stopwatch Functions ********
   function start() {
-    setIsRunning(true);
     startTimeRef.current = Date.now() - elapsedTime;
+    setIsRunning(true);
   }
 
   function stop() {
@@ -42,9 +53,11 @@ export default function StopWatch({ action }) {
 
   function reset() {
     setIsRunning(false);
-    setTimeout(() => {
-      setElapsedTime(0);
-    }, 1);
+    dataRef.current = {
+      startTime: 0,
+      elapsedTime: 0,
+    };
+    setElapsedTime(0);
   }
 
   function formatTime() {

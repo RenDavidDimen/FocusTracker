@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Keyboard,
   KeyboardAvoidingView,
@@ -7,7 +7,6 @@ import {
   StyleSheet,
   Text,
   TextInput,
-  TouchableWithoutFeedback,
   View,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -15,6 +14,8 @@ import CircleButton from "@/components/CircleButton";
 import StopWatch from "@/components/StopWatch";
 import * as Colors from "@/constants/Colors";
 import * as Keys from "@/constants/Keys";
+import { Activity } from "@/classes/Activity";
+import { activityData } from "@/tests/TestData";
 
 export default function tracker() {
   const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
@@ -22,7 +23,8 @@ export default function tracker() {
   const [activityName, setActivityName] = useState("");
   const [activityType, setActivityType] = useState("");
   const [typeData, setTypeData] = useState([]);
-  const [activityData, setActivityData] = useState([]);
+  const [localActivityData, setLocalActivityData] = useState<Activity[]>([]);
+  const stopWatchDataRef = useRef({ startTime: 0, elapsedTime: 0 });
 
   const fetchData = async () => {
     try {
@@ -31,12 +33,15 @@ export default function tracker() {
       if (typeData !== null) {
         setTypeData(JSON.parse(typeData));
       } else {
-        setTypeData(JSON.parse("[]"));
+        setTypeData([]);
       }
       if (activityData !== null) {
-        setActivityData(JSON.parse(activityData));
+        setLocalActivityData(JSON.parse(activityData));
+        console.log(
+          `fetched: ${JSON.stringify(JSON.parse(activityData), null, 4)}`
+        );
       } else {
-        setActivityData(JSON.parse("[]"));
+        setLocalActivityData([]);
       }
     } catch (e) {
       console.log(`Error fetching in data: ${e}`);
@@ -67,9 +72,10 @@ export default function tracker() {
     Keyboard.dismiss();
   };
 
-  const setData = async (key: string, value) => {
+  const storeActivityData = async (key: string, value: string) => {
     try {
       await AsyncStorage.setItem(key, value);
+      await fetchData();
     } catch (e) {
       console.log(`saving error occured when trying to save ${key}`);
     }
@@ -77,18 +83,39 @@ export default function tracker() {
 
   const handleSave = () => {
     setStopwatchAction("stop");
+
     if (activityName.trim() === "" || activityType.trim() === "") {
       alert("'Error', 'Please fill in both fields.'");
       return;
     }
 
+    const { startTime, elapsedTime } = stopWatchDataRef.current;
+    if (startTime == 0 || elapsedTime == 0) {
+      alert(
+        "Error: Invalid Stopwatch Data, Start Time or Elapsed Time read as 0"
+      );
+      return;
+    }
+
+    // *************************************************
+    const newActivity = new Activity(
+      activityName,
+      activityType,
+      startTime,
+      elapsedTime
+    );
+
+    setLocalActivityData((activityData) => {
+      const updatedData = [...activityData, newActivity];
+      storeActivityData(Keys.ACTIVITY_DATA, JSON.stringify(updatedData));
+      return updatedData;
+    });
+
+    // *************************************************
+
     setStopwatchAction("reset");
-    const newActivity = { name: activityName, type: activityType };
-    setActivityData((activityData) => [...activityData, newActivity]);
 
-    alert("[" + activityName + ", " + activityType + "] saved successfully!'");
-
-    // Clear the form
+    // Clear form
     setActivityName("");
     setActivityType("");
   };
@@ -157,43 +184,41 @@ export default function tracker() {
 
   return (
     <SafeAreaView style={styles.screen}>
-      <TouchableWithoutFeedback onPress={() => dismissKeyboard()}>
-        <View style={styles.screenContainer}>
-          <View style={styles.upperScreenSection}>
-            <Text style={styles.subHeader}>Track Your Activity</Text>
+      <View style={styles.screenContainer}>
+        <View style={styles.upperScreenSection}>
+          <Text style={styles.subHeader}>Track Your Activity</Text>
 
-            <View style={styles.timerContainer}>
-              <StopWatch action={stopwatchAction} />
-            </View>
-
-            <KeyboardAvoidingView
-              behavior={Platform.OS === "ios" ? "padding" : undefined}
-              style={styles.activityForm}
-            >
-              <View style={styles.inputField}>
-                <Text style={styles.inputLabel}>Activity Name </Text>
-                <TextInput
-                  style={styles.input}
-                  placeholder="Enter activity name"
-                  value={activityName}
-                  onChangeText={setActivityName}
-                />
-              </View>
-              <View style={styles.inputField}>
-                <Text style={styles.inputLabel}>Activity Type </Text>
-                <TextInput
-                  style={styles.input}
-                  placeholder="Enter activity type"
-                  value={activityType}
-                  onChangeText={setActivityType}
-                />
-              </View>
-            </KeyboardAvoidingView>
+          <View style={styles.timerContainer}>
+            <StopWatch action={stopwatchAction} dataRef={stopWatchDataRef} />
           </View>
 
-          {!isKeyboardVisible && setStopwatchControls()}
+          <KeyboardAvoidingView
+            behavior={Platform.OS === "ios" ? "padding" : undefined}
+            style={styles.activityForm}
+          >
+            <View style={styles.inputField}>
+              <Text style={styles.inputLabel}>Activity Name </Text>
+              <TextInput
+                style={styles.input}
+                placeholder="Enter activity name"
+                value={activityName}
+                onChangeText={setActivityName}
+              />
+            </View>
+            <View style={styles.inputField}>
+              <Text style={styles.inputLabel}>Activity Type </Text>
+              <TextInput
+                style={styles.input}
+                placeholder="Enter activity type"
+                value={activityType}
+                onChangeText={setActivityType}
+              />
+            </View>
+          </KeyboardAvoidingView>
         </View>
-      </TouchableWithoutFeedback>
+
+        {!isKeyboardVisible && setStopwatchControls()}
+      </View>
     </SafeAreaView>
   );
 }
