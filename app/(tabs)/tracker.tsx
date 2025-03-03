@@ -37,9 +37,6 @@ export default function tracker() {
       }
       if (activityData !== null) {
         setLocalActivityData(JSON.parse(activityData));
-        console.log(
-          `fetched: ${JSON.stringify(JSON.parse(activityData), null, 4)}`
-        );
       } else {
         setLocalActivityData([]);
       }
@@ -97,7 +94,6 @@ export default function tracker() {
       return;
     }
 
-    // *************************************************
     const newActivity = new Activity(
       activityName,
       activityType,
@@ -111,11 +107,8 @@ export default function tracker() {
       return updatedData;
     });
 
-    // *************************************************
-
+    // Reset Stopwatch and input form
     setStopwatchAction("reset");
-
-    // Clear form
     setActivityName("");
     setActivityType("");
   };
