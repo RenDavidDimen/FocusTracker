@@ -4,34 +4,27 @@ import { useFocusEffect } from "expo-router";
 import { Text, View, StyleSheet, SafeAreaView } from "react-native";
 import { FlatList } from "react-native-gesture-handler";
 import { PieChart } from "react-native-gifted-charts";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import CircleButton from "@/components/CircleButton";
 import Divider from "@/components/Divider";
 import TimeConverter from "@/classes/TimeConverter";
 import * as Keys from "@/constants/Keys";
 import * as Colors from "@/constants/Colors";
+import { Activity } from "@/classes/Activity";
+import { TypeData } from "@/classes/TypeData";
+import StorageHelper from "@/classes/StorageHelper";
 
 export default function Index() {
-  const [typeData, setTypeData] = useState([]);
-  const [activityData, setActivityData] = useState([]);
+  const [localTypeData, setLocalTypeData] = useState<TypeData[]>([]);
+  const [localActivityData, setLocalActivityData] = useState<Activity[]>([]);
 
   const fetchData = async () => {
-    try {
-      const typeData = await AsyncStorage.getItem(Keys.TYPE_DATA);
-      const activityData = await AsyncStorage.getItem(Keys.ACTIVITY_DATA);
-      if (typeData !== null) {
-        setTypeData(JSON.parse(typeData));
-      } else {
-        setTypeData(JSON.parse("[]"));
-      }
-      if (activityData !== null) {
-        setActivityData(JSON.parse(activityData));
-      } else {
-        setActivityData(JSON.parse("[]"));
-      }
-    } catch (e) {
-      console.log(`Error fetching in data: ${e}`);
-    }
+    const typeData = await StorageHelper.getItem<TypeData[]>(Keys.TYPE_DATA);
+    const activityData = await StorageHelper.getItem<Activity[]>(
+      Keys.ACTIVITY_DATA
+    );
+
+    setLocalTypeData(typeData || []);
+    setLocalActivityData(activityData || []);
   };
 
   useFocusEffect(
@@ -45,18 +38,10 @@ export default function Index() {
     return <Text style={styles.activityDuration}>{timeString}</Text>;
   }
 
-  const storeData = async (key: string, value) => {
-    try {
-      await AsyncStorage.setItem(key, value);
-    } catch (e) {
-      console.log(`saving error occured when trying to save ${key}`);
-    }
-  };
-
-  const renderActivityData = ({ item }) => {
+  const renderActivityData = ({ item }: { item: Activity }) => {
     return (
       <View style={styles.activityContainer}>
-        <Text style={styles.activityType}>{item.type} </Text>
+        <Text style={styles.activityName}>{item.name} </Text>
         <Text style={styles.activityDuration}>
           {getDuration(item.duration)}
         </Text>
@@ -81,7 +66,7 @@ export default function Index() {
               innerCircleBorderWidth={5}
               innerCircleBorderColor={Colors.BEIGE}
               edgesRadius={15}
-              data={typeData}
+              data={localTypeData}
               centerLabelComponent={() => {
                 return (
                   <View>
@@ -97,7 +82,7 @@ export default function Index() {
 
         <View style={styles.recentActivitiesContainer}>
           <Text style={styles.subheader}>Recent Activities</Text>
-          <FlatList data={activityData} renderItem={renderActivityData} />
+          <FlatList data={localActivityData} renderItem={renderActivityData} />
         </View>
 
         <Divider width={2} color={"lightgrey"} dividerStyle={styles.divider} />
@@ -160,7 +145,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     borderRadius: 5,
   },
-  activityType: {
+  activityName: {
     fontSize: 20,
     fontWeight: "bold",
   },
