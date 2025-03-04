@@ -1,5 +1,5 @@
 export default class TimeConverter {
-  static msToReadableTime(ms: number): string {
+  static msToDHMS(ms: number): string {
     const SECOND = 1000;
     const MINUTE = 60 * SECOND;
     const HOUR = 60 * MINUTE;
@@ -15,6 +15,23 @@ export default class TimeConverter {
     if (hours > 0) parts.push(`${hours}h`);
     if (minutes > 0) parts.push(`${minutes}m`);
     if (seconds > 0) parts.push(`${seconds}s`);
+
+    if (parts.length === 0) return "0s";
+    return parts.join(" ");
+  }
+
+  static msToHM(ms: number): string {
+    const SECOND = 1000;
+    const MINUTE = 60 * SECOND;
+    const HOUR = 60 * MINUTE;
+    const DAY = 24 * HOUR;
+
+    const hours = Math.floor(ms / HOUR);
+    const minutes = Math.floor((ms % HOUR) / MINUTE);
+
+    const parts: string[] = [];
+    if (hours > 0) parts.push(`${hours}h`);
+    if (minutes > 0) parts.push(`${minutes}m`);
 
     if (parts.length === 0) return "0s";
     return parts.join(" ");

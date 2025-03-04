@@ -11,12 +11,13 @@ export class TypeDataHelper {
     );
 
     if (activityTypeExists) {
-      const updatedData = typeDataArray.map((typeData) => {
+      const updatedTypeData = typeDataArray.map((typeData) => {
         if (typeData.type === newActivity.type) {
           return { ...typeData, value: typeData.value + newActivity.duration };
         }
         return typeData;
       });
+      return updatedTypeData;
     } else {
       const newTypeData = new TypeData(
         newActivity.type,

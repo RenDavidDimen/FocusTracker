@@ -1,5 +1,5 @@
 import React from "react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useFocusEffect } from "expo-router";
 import { Text, View, StyleSheet, SafeAreaView } from "react-native";
 import { FlatList } from "react-native-gesture-handler";
@@ -34,8 +34,12 @@ export default function Index() {
   );
 
   function getDuration(duration: any) {
-    const timeString = TimeConverter.msToReadableTime(duration);
+    const timeString = TimeConverter.msToDHMS(duration);
     return <Text style={styles.activityDuration}>{timeString}</Text>;
+  }
+
+  function getLatestActivityData(): Activity[] {
+    return localActivityData.slice(-5).reverse();
   }
 
   const renderActivityData = ({ item }: { item: Activity }) => {
@@ -71,7 +75,12 @@ export default function Index() {
                 return (
                   <View>
                     <Text style={{ fontSize: 24, fontWeight: "bold" }}>
-                      3h41m
+                      {TimeConverter.msToHM(
+                        localTypeData.reduce(
+                          (sum, type: TypeData) => sum + type.value,
+                          0
+                        )
+                      )}
                     </Text>
                   </View>
                 );
@@ -82,7 +91,10 @@ export default function Index() {
 
         <View style={styles.recentActivitiesContainer}>
           <Text style={styles.subheader}>Recent Activities</Text>
-          <FlatList data={localActivityData} renderItem={renderActivityData} />
+          <FlatList
+            data={getLatestActivityData()}
+            renderItem={renderActivityData}
+          />
         </View>
 
         <Divider width={2} color={"lightgrey"} dividerStyle={styles.divider} />
