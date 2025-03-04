@@ -9,40 +9,32 @@ import {
   TextInput,
   View,
 } from "react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import CircleButton from "@/components/CircleButton";
 import StopWatch from "@/components/StopWatch";
 import * as Colors from "@/constants/Colors";
 import * as Keys from "@/constants/Keys";
 import { Activity } from "@/classes/Activity";
-import { activityData } from "@/tests/TestData";
+import { TypeData } from "@/classes/TypeData";
+import StorageHelper from "@/classes/StorageHelper";
+import { TypeDataHelper } from "@/classes/TypeDataHelper";
 
 export default function tracker() {
   const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
   const [stopwatchAction, setStopwatchAction] = useState("");
   const [activityName, setActivityName] = useState("");
   const [activityType, setActivityType] = useState("");
-  const [typeData, setTypeData] = useState([]);
+  const [localTypeData, setLocalTypeData] = useState<TypeData[]>([]);
   const [localActivityData, setLocalActivityData] = useState<Activity[]>([]);
   const stopWatchDataRef = useRef({ startTime: 0, elapsedTime: 0 });
 
   const fetchData = async () => {
-    try {
-      const typeData = await AsyncStorage.getItem(Keys.TYPE_DATA);
-      const activityData = await AsyncStorage.getItem(Keys.ACTIVITY_DATA);
-      if (typeData !== null) {
-        setTypeData(JSON.parse(typeData));
-      } else {
-        setTypeData([]);
-      }
-      if (activityData !== null) {
-        setLocalActivityData(JSON.parse(activityData));
-      } else {
-        setLocalActivityData([]);
-      }
-    } catch (e) {
-      console.log(`Error fetching in data: ${e}`);
-    }
+    const typeData = await StorageHelper.getItem<TypeData[]>(Keys.TYPE_DATA);
+    const activityData = await StorageHelper.getItem<Activity[]>(
+      Keys.ACTIVITY_DATA
+    );
+
+    setLocalTypeData(typeData || []);
+    setLocalActivityData(activityData || []);
   };
 
   useEffect(() => {
@@ -64,19 +56,6 @@ export default function tracker() {
       keyboardDidHideListener.remove();
     };
   }, []);
-
-  const dismissKeyboard = () => {
-    Keyboard.dismiss();
-  };
-
-  const storeActivityData = async (key: string, value: string) => {
-    try {
-      await AsyncStorage.setItem(key, value);
-      await fetchData();
-    } catch (e) {
-      console.log(`saving error occured when trying to save ${key}`);
-    }
-  };
 
   const handleSave = () => {
     setStopwatchAction("stop");
@@ -101,9 +80,30 @@ export default function tracker() {
       elapsedTime
     );
 
-    setLocalActivityData((activityData) => {
-      const updatedData = [...activityData, newActivity];
-      storeActivityData(Keys.ACTIVITY_DATA, JSON.stringify(updatedData));
+    fetchData();
+
+    setLocalTypeData(() => {
+      const updatedTypeData = TypeDataHelper.updateTypeData(
+        newActivity,
+        localTypeData
+      );
+      (async () => {
+        await StorageHelper.setItem<TypeData[]>(
+          Keys.TYPE_DATA,
+          updatedTypeData
+        );
+      })();
+      return updatedTypeData;
+    });
+
+    setLocalActivityData(() => {
+      const updatedData = [...localActivityData, newActivity];
+      (async () => {
+        await StorageHelper.setItem<Activity[]>(
+          Keys.ACTIVITY_DATA,
+          updatedData
+        );
+      })();
       return updatedData;
     });
 
