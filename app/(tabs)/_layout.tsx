@@ -55,8 +55,7 @@ export default function TabLayout() {
         name="history"
         options={{
           title: "History",
-          headerTitle: "History",
-          headerTitleAlign: "center",
+          headerShown: false,
           tabBarIcon: ({ focused, color }) => (
             <Ionicons
               name={focused ? "calendar-sharp" : "calendar-outline"}

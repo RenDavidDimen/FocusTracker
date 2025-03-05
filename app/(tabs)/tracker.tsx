@@ -37,26 +37,6 @@ export default function tracker() {
     setLocalActivityData(activityData || []);
   };
 
-  useEffect(() => {
-    fetchData();
-  }, []);
-
-  useEffect(() => {
-    const keyboardDidShowListener = Keyboard.addListener(
-      "keyboardDidShow",
-      () => setIsKeyboardVisible(true)
-    );
-    const keyboardDidHideListener = Keyboard.addListener(
-      "keyboardDidHide",
-      () => setIsKeyboardVisible(false)
-    );
-
-    return () => {
-      keyboardDidShowListener.remove();
-      keyboardDidHideListener.remove();
-    };
-  }, []);
-
   const handleSave = () => {
     setStopwatchAction("stop");
 
@@ -174,6 +154,24 @@ export default function tracker() {
       );
     }
   }
+
+  useEffect(() => {
+    fetchData();
+
+    const keyboardDidShowListener = Keyboard.addListener(
+      "keyboardDidShow",
+      () => setIsKeyboardVisible(true)
+    );
+    const keyboardDidHideListener = Keyboard.addListener(
+      "keyboardDidHide",
+      () => setIsKeyboardVisible(false)
+    );
+
+    return () => {
+      keyboardDidShowListener.remove();
+      keyboardDidHideListener.remove();
+    };
+  }, []);
 
   return (
     <SafeAreaView style={styles.screen}>
